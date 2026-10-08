@@ -772,8 +772,13 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   // --- Countdown Timer Logic ---
+  let countdownInterval;
   function initCountdown() {
-    const targetDate = new Date('2026-10-24T09:30:00+05:30').getTime();
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    // Read dynamically from the store (which loads from Firebase or LocalStorage)
+    const targetDateStr = window.participantStore.eventConfig?.targetDate || '2026-10-24T09:30:00+05:30';
+    const targetDate = new Date(targetDateStr).getTime();
 
     function update() {
       const now = new Date().getTime();
@@ -799,8 +804,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     update();
-    setInterval(update, 1000);
+    countdownInterval = setInterval(update, 1000);
   }
+
+  // Bind real-time data sync from Firebase to UI
+  window.participantStore.onDataChange = () => {
+    initCountdown(); // Re-initialize countdown in case config changed
+    refreshDashboard();
+  };
 
   // Helper escape HTML
   function escapeHtml(str) {

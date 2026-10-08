@@ -139,33 +139,81 @@ const DEFAULT_PARTICIPANTS = [
 
 class ParticipantStore {
   constructor() {
-    this.participants = this.loadParticipants();
+    this.participants = [];
+    this.eventConfig = {
+      totalCapacity: 150,
+      targetDate: '2026-10-24T09:30:00+05:30'
+    };
+    this.onDataChange = null;
+
+    this.loadInitialData();
+
+    // Initialize Firebase listeners if configured
+    if (window.isFirebaseConfigured) {
+      this.db = firebase.firestore();
+      this.setupFirebaseListeners();
+    }
   }
 
-  loadParticipants() {
+  loadInitialData() {
     try {
+      const storedConfig = localStorage.getItem(STORAGE_KEY + '_config');
+      if (storedConfig) {
+        this.eventConfig = JSON.parse(storedConfig);
+      }
+
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed) && parsed.length > 0) {
-          return parsed;
+          this.participants = parsed;
+          return;
         }
       }
     } catch (e) {
-      console.warn('Failed to load participants from localStorage:', e);
+      console.warn('Failed to load from localStorage:', e);
     }
     // Initialize with default seeds
-    this.saveParticipants(DEFAULT_PARTICIPANTS);
-    return [...DEFAULT_PARTICIPANTS];
+    this.participants = [...DEFAULT_PARTICIPANTS];
+    this.persistLocal();
   }
 
-  saveParticipants(list) {
+  persistLocal() {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-      this.participants = list;
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(this.participants));
+      localStorage.setItem(STORAGE_KEY + '_config', JSON.stringify(this.eventConfig));
     } catch (e) {
       console.error('Failed to save to localStorage:', e);
     }
+  }
+
+  setupFirebaseListeners() {
+    // Listen to dynamic event config
+    this.db.collection('config').doc('eventDetails').onSnapshot(doc => {
+      if (doc.exists) {
+        this.eventConfig = { ...this.eventConfig, ...doc.data() };
+        this.persistLocal();
+        if (this.onDataChange) this.onDataChange();
+      }
+    });
+
+    // Listen to real-time participant registrations
+    this.db.collection('participants').onSnapshot(snapshot => {
+      const serverParticipants = [];
+      snapshot.forEach(doc => {
+        serverParticipants.push(doc.data());
+      });
+      
+      serverParticipants.sort((a, b) => new Date(b.registrationDate) - new Date(a.registrationDate));
+      
+      if (serverParticipants.length > 0) {
+         this.participants = serverParticipants;
+         this.persistLocal();
+         if (this.onDataChange) this.onDataChange();
+      }
+    }, err => {
+      console.error("Firebase sync error:", err);
+    });
   }
 
   getAll() {
@@ -192,8 +240,17 @@ class ParticipantStore {
       registrationDate: new Date().toISOString(),
       ...participantData
     };
+    
+    // Optimistic UI Update
     this.participants.unshift(newParticipant);
-    this.saveParticipants(this.participants);
+    this.persistLocal();
+
+    // Push to Firebase
+    if (window.isFirebaseConfigured) {
+      this.db.collection('participants').doc(newParticipant.id).set(newParticipant)
+        .catch(err => console.error("Firebase save error:", err));
+    }
+
     return newParticipant;
   }
 
@@ -201,7 +258,11 @@ class ParticipantStore {
     const participant = this.participants.find(p => p.id === id);
     if (participant) {
       participant.status = participant.status === 'Checked-in' ? 'Confirmed' : 'Checked-in';
-      this.saveParticipants(this.participants);
+      this.persistLocal();
+      
+      if (window.isFirebaseConfigured) {
+        this.db.collection('participants').doc(id).update({ status: participant.status });
+      }
       return participant;
     }
     return null;
@@ -210,17 +271,29 @@ class ParticipantStore {
   remove(id) {
     const initialLen = this.participants.length;
     this.participants = this.participants.filter(p => p.id !== id);
-    this.saveParticipants(this.participants);
+    this.persistLocal();
+    
+    if (window.isFirebaseConfigured) {
+      this.db.collection('participants').doc(id).delete();
+    }
     return this.participants.length < initialLen;
   }
 
   resetToDefault() {
-    this.saveParticipants(DEFAULT_PARTICIPANTS);
-    return [...DEFAULT_PARTICIPANTS];
+    this.participants = [...DEFAULT_PARTICIPANTS];
+    this.persistLocal();
+    
+    if (window.isFirebaseConfigured) {
+      DEFAULT_PARTICIPANTS.forEach(p => {
+        this.db.collection('participants').doc(p.id).set(p);
+      });
+    }
+    return this.participants;
   }
 
   clearAll() {
-    this.saveParticipants([]);
+    this.participants = [];
+    this.persistLocal();
     return [];
   }
 
@@ -228,7 +301,9 @@ class ParticipantStore {
     const total = this.participants.length;
     const checkedIn = this.participants.filter(p => p.status === 'Checked-in').length;
     const ieeeMembers = this.participants.filter(p => p.ieeeMember).length;
-    const totalCapacity = 150;
+    
+    // Dynamic config bound from Firebase or LocalStorage
+    const totalCapacity = this.eventConfig.totalCapacity || 150;
     const seatsRemaining = Math.max(0, totalCapacity - total);
 
     const trackCounts = {
