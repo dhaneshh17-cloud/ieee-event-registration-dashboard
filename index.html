@@ -38,7 +38,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <!-- Custom Styles -->
-  <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="styles.css" />
 </head>
 
 <body class="bg-[#0B1120] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-[#00A3E0] selection:text-white">
@@ -59,7 +59,7 @@
         <div class="flex items-center gap-2 bg-slate-900/80 p-2 rounded-xl border border-slate-800 shadow-inner">
           <!-- IEEE Logo -->
           <img 
-            src="assets/ieee-logo.jpg" 
+            src="ieee-logo.jpg" 
             onerror="this.src='https://plain-apac-prod-public.komododecks.com/202609/17/EtJRryiEBiWtEZ0P6uI5/image.jpg'" 
             alt="IEEE Logo" 
             class="h-8 sm:h-9 w-auto object-contain rounded"
@@ -67,7 +67,7 @@
           <div class="h-6 w-px bg-slate-700"></div>
           <!-- IAS Logo -->
           <img 
-            src="assets/ias-logo.jpg" 
+            src="ias-logo.jpg" 
             onerror="this.src='https://plain-apac-prod-public.komododecks.com/202609/17/fZX7Oap2QzKzLWLJFr96/image.png'" 
             alt="IEEE IAS Logo" 
             class="h-8 sm:h-9 w-auto object-contain rounded"
@@ -75,7 +75,7 @@
           <div class="h-6 w-px bg-slate-700"></div>
           <!-- RAS Logo -->
           <img 
-            src="assets/ras-logo.jpg" 
+            src="ras-logo.jpg" 
             onerror="this.src='https://plain-apac-prod-public.komododecks.com/202609/17/HMDQxvrIYT1iYhYlSRr5/image.jpg'" 
             alt="IEEE RAS Logo" 
             class="h-8 sm:h-9 w-auto object-contain rounded"
@@ -1084,7 +1084,7 @@
       <!-- Footer Image Banner from provided task assets -->
       <div class="rounded-2xl overflow-hidden border border-slate-800 shadow-xl bg-slate-900/50 flex justify-center">
         <img 
-          src="assets/footer-image.jpg" 
+          src="footer-image.jpg" 
           onerror="this.src='https://plain-apac-prod-public.komododecks.com/202609/17/MrRh7jqDYuucqnLeiKzM/image.jpg'" 
           alt="IEEE IAS & RAS Banner" 
           class="w-full max-h-48 object-cover"
@@ -1150,8 +1150,10 @@
   </footer>
 
   <!-- Application Logic Scripts -->
-  <script src="js/data.js"></script>
-  <script src="js/chart.js"></script>
-  <script src="js/app.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vanilla-tilt/1.8.1/vanilla-tilt.min.js"></script>
+  <script src="data.js"></script>
+  <script src="chart.js"></script>
+  <script src="app.js"></script>
+  <script src="interactivity.js"></script>
 </body>
 </html>
