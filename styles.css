@@ -5,7 +5,7 @@
 :root {
   --ieee-blue: #00629B;
   --ieee-dark: #002855;
-  --ieee-cyan: #00A3E0;
+  --ieee-cyan: #0080FF;
   --ieee-accent: #10B981;
   --bg-dark: #0B1120;
   --bg-card: #131E35;
@@ -14,7 +14,7 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: var(--bg-dark);
+  background: linear-gradient(135deg, #0f0c20 0%, #150a21 50%, #081226 100%) !important;
   color: #F1F5F9;
   overflow-x: hidden;
 }

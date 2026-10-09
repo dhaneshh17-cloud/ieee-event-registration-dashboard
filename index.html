@@ -19,8 +19,14 @@
             brand: {
               blue: '#00629B',
               dark: '#002855',
-              cyan: '#00A3E0',
+              cyan: '#0080FF',
               accent: '#10B981'
+            },
+            sky: {
+              300: '#66B2FF',
+              400: '#3399FF',
+              500: '#0080FF',
+              600: '#0066CC',
             }
           }
         }
@@ -41,10 +47,10 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 
-<body class="bg-[#0B1120] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-[#00A3E0] selection:text-white">
+<body class="bg-[#0b0f19] text-slate-100 min-h-screen flex flex-col antialiased selection:bg-[#0080FF] selection:text-white">
 
   <!-- Top Announcement Bar -->
-  <div class="bg-gradient-to-r from-[#002855] via-[#00629B] to-[#00A3E0] text-xs sm:text-sm py-2 px-4 text-center font-medium tracking-wide flex items-center justify-center gap-2 shadow-sm">
+  <div class="bg-gradient-to-r from-[#002855] via-[#00629B] to-[#0080FF] text-xs sm:text-sm py-2 px-4 text-center font-medium tracking-wide flex items-center justify-center gap-2 shadow-sm">
     <span class="pulsing-indicator inline-block w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
     <span><strong>Recruitment Drive 2026</strong> • Official Technical Task 3 Portal • IEEE IAS & RAS MITS Gwalior</span>
     <span class="hidden md:inline-block bg-white/20 px-2 py-0.5 rounded text-[11px] font-mono">LIVE SYSTEM</span>
@@ -171,8 +177,7 @@
           <div class="flex flex-wrap gap-4 justify-center lg:justify-start pt-2">
             <a 
               href="#register" 
-              class="px-6 py-3.5 rounded-xl bg-gradient-to-r from-[#00629B] to-[#00A3E0] hover:from-[#005282] hover:to-[#008ec4] text-white font-semibold shadow-lg shadow-sky-500/25 flex items-center gap-2 transition-all active:scale-95"
-            >
+              class="px-6 py-3.5 rounded-xl bg-[#0080FF] hover:bg-[#0066CC] text-white font-semibold shadow-lg shadow-[#0080FF]/25 flex items-center gap-2 transition-all active:scale-95">
               <span>Complete Registration</span>
               <i data-lucide="arrow-right" class="w-4 h-4"></i>
             </a>
@@ -679,10 +684,7 @@
 
               <!-- Submit Button -->
               <div>
-                <button 
-                  type="submit" 
-                  id="btnSubmit" 
-                  class="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-[#00629B] via-[#00A3E0] to-[#0284C7] hover:from-[#005282] hover:to-[#0275b0] text-white font-bold text-sm sm:text-base shadow-xl shadow-sky-600/30 flex items-center justify-center gap-2 transition-all active:scale-[0.99]"
+                <button type="submit" id="btnSubmit" class="w-full py-4 px-6 rounded-2xl bg-[#0080FF] hover:bg-[#0066CC] text-white font-bold text-sm sm:text-base shadow-xl shadow-[#0080FF]/30 flex items-center justify-center gap-2 transition-all active:scale-[0.99]">
                 >
                   <i data-lucide="send" class="w-5 h-5"></i>
                   <span>Submit Event Registration</span>
@@ -1162,5 +1164,42 @@
   <script src="js/chart.js"></script>
   <script src="js/app.js"></script>
   <script src="interactivity.js"></script>
+<!-- Background Music (auto-play, loop, low volume) -->
+<audio id="bg-music" src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_ef5455b5e4.mp3?filename=ambient-117169.mp3" loop preload="auto" autoplay style="display:none"></audio>
+<button id="music-toggle" class="fixed bottom-6 right-6 z-50 w-12 h-12 rounded-full bg-[#0080FF] text-white flex items-center justify-center hover:bg-[#0066CC] transition-colors" aria-label="Toggle Music">
+  <svg id="music-icon" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-2v13" /></svg>
+</button>
+<script>
+  const music = document.getElementById('bg-music');
+  const toggle = document.getElementById('music-toggle');
+  const icon = document.getElementById('music-icon');
+  // Set initial volume (35%)
+  music.volume = 0.35;
+  // Attempt to play; fallback on first user interaction
+  const attemptPlay = () => {
+    music.play().catch(() => {
+      document.addEventListener('click', () => music.play(), { once: true });
+    });
+  };
+  attemptPlay();
+  // Update icon based on play state
+  const updateIcon = () => {
+    if (music.paused) {
+      icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-2v13" />';
+    } else {
+      icon.innerHTML = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v14m7-7H5" />';
+    }
+  };
+  toggle.addEventListener('click', () => {
+    if (music.paused) {
+      music.play();
+    } else {
+      music.pause();
+    }
+    updateIcon();
+  });
+  music.addEventListener('play', updateIcon);
+  music.addEventListener('pause', updateIcon);
+</script>
 </body>
 </html>
