@@ -1,5 +1,5 @@
 /**
- * IEEE IAS & RAS MITS Gwalior - InnovateX 2026
+ * Google Developer Groups (GDG) On Campus • MITS Gwalior - DevSummit 2026
  * Analytics & Interactive Charts (Chart.js)
  */
 
@@ -30,15 +30,15 @@ function initCharts() {
   trackChartInstance = new Chart(trackCanvas, {
     type: 'doughnut',
     data: {
-      labels: ['Robotics (RAS)', 'Industrial IoT (IAS)', 'Applied AI', 'RoboCode'],
+      labels: ['Cloud & DevOps', 'Applied AI & ML', 'Android & Flutter', 'Web Systems'],
       datasets: [
         {
           data: trackData,
           backgroundColor: [
-            '#00629B', // IEEE Blue
-            '#00A3E0', // Electric Cyan
-            '#10B981', // Emerald Green
-            '#8B5CF6'  // Purple Accent
+            '#4285F4', // Google Blue
+            '#EA4335', // Google Red
+            '#FBBC04', // Google Yellow
+            '#34A853'  // Google Green
           ],
           borderColor: '#1E293B',
           borderWidth: 2,
@@ -92,7 +92,7 @@ function initCharts() {
         {
           label: 'Students Registered',
           data: yearData,
-          backgroundColor: '#00A3E0',
+          backgroundColor: '#4285F4',
           borderRadius: 6,
           barPercentage: 0.6
         }
@@ -108,8 +108,12 @@ function initCharts() {
         },
         y: {
           beginAtZero: true,
-          grid: { color: '#334155', drawBorder: false },
-          ticks: { stepSize: 1, color: '#94A3B8', font: { family: "'Inter', sans-serif", size: 11 } }
+          ticks: { 
+            stepSize: 1,
+            color: '#94A3B8', 
+            font: { family: "'Space Grotesk', monospace", size: 11 } 
+          },
+          grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false }
         }
       },
       plugins: {
@@ -128,17 +132,17 @@ function initCharts() {
 }
 
 function updateCharts() {
-  if (typeof Chart === 'undefined') return;
-  const analytics = window.participantStore.getAnalytics();
+  if (!trackChartInstance || !yearChartInstance) {
+    initCharts();
+    return;
+  }
 
-  if (trackChartInstance) {
-    trackChartInstance.data.datasets[0].data = Object.values(analytics.trackCounts);
-    trackChartInstance.update();
-  }
-  if (yearChartInstance) {
-    yearChartInstance.data.datasets[0].data = Object.values(analytics.yearCounts);
-    yearChartInstance.update();
-  }
+  const analytics = window.participantStore.getAnalytics();
+  trackChartInstance.data.datasets[0].data = Object.values(analytics.trackCounts);
+  trackChartInstance.update();
+
+  yearChartInstance.data.datasets[0].data = Object.values(analytics.yearCounts);
+  yearChartInstance.update();
 }
 
 window.initCharts = initCharts;

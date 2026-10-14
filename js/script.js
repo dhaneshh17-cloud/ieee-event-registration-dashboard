@@ -1,27 +1,29 @@
-// script.js - Enhances IEEE Event Registration Dashboard interactivity
+// script.js - Enhances GDG Event Registration Dashboard interactivity
 
 // Utility Functions
 function $(selector) { return document.querySelector(selector); }
 function $all(selector) { return document.querySelectorAll(selector); }
 
 // Load participants from LocalStorage or initialize empty array
-let participants = JSON.parse(localStorage.getItem('participants') || '[]');
+let participants = JSON.parse(localStorage.getItem('gdg_devsummit_participants_2026') || localStorage.getItem('participants') || '[]');
 
 // Update KPI counters
 function updateKPIs() {
   const total = participants.length;
   const capacity = 150; // total seats
-  const remaining = capacity - total;
-  const checkedIn = participants.filter(p => p.checkedIn).length;
+  const remaining = Math.max(0, capacity - total);
+  const checkedIn = participants.filter(p => p.checkedIn || p.status === 'Checked-in').length;
   const checkedPct = total ? Math.round((checkedIn / total) * 100) : 0;
 
-  $('#kpiTotal').textContent = total;
-  $('#kpiSeatsLeft').textContent = remaining;
-  $('#kpiCheckIn').textContent = checkedIn;
-  $('#kpiCheckInPct').textContent = `(${checkedPct}%)`;
-  $('#heroSeatsText').textContent = `${total}/${capacity}`;
-  const progress = Math.min(100, (total / capacity) * 100);
-  $('#heroProgressBar').style.width = `${progress}%`;
+  if ($('#kpiTotal')) $('#kpiTotal').textContent = total;
+  if ($('#kpiSeatsLeft')) $('#kpiSeatsLeft').textContent = remaining;
+  if ($('#kpiCheckIn')) $('#kpiCheckIn').textContent = checkedIn;
+  if ($('#kpiCheckInPct')) $('#kpiCheckInPct').textContent = `(${checkedPct}%)`;
+  if ($('#heroSeatsText')) $('#heroSeatsText').textContent = `${total}/${capacity}`;
+  if ($('#heroProgressBar')) {
+    const progress = Math.min(100, (total / capacity) * 100);
+    $('#heroProgressBar').style.width = `${progress}%`;
+  }
 }
 
 // Render participant directory
@@ -39,7 +41,7 @@ function renderDirectory(filter = '') {
       );
     })
     .map(p => `
-      <tr class="${p.checkedIn ? 'bg-emerald-900/30' : ''}">
+      <tr class="${p.checkedIn || p.status === 'Checked-in' ? 'bg-emerald-900/30' : ''}">
         <td class="px-4 py-2">${p.fullName}</td>
         <td class="px-4 py-2">${p.email}</td>
         <td class="px-4 py-2">${p.branch}</td>
@@ -71,7 +73,7 @@ function attachCheckinHandlers() {
 
 // Save participants to LocalStorage
 function saveData() {
-  localStorage.setItem('participants', JSON.stringify(participants));
+  localStorage.setItem('gdg_devsummit_participants_2026', JSON.stringify(participants));
 }
 
 // Form validation helpers
@@ -79,12 +81,14 @@ function validateField(input, validator, errorMsg) {
   const errorEl = $(`#err-${input.id}`);
   if (validator(input.value)) {
     input.classList.remove('border-red-500');
-    errorEl.classList.add('hidden');
+    if (errorEl) errorEl.classList.add('hidden');
     return true;
   } else {
     input.classList.add('border-red-500');
-    errorEl.textContent = errorMsg;
-    errorEl.classList.remove('hidden');
+    if (errorEl) {
+      errorEl.textContent = errorMsg;
+      errorEl.classList.remove('hidden');
+    }
     return false;
   }
 }
@@ -113,12 +117,19 @@ function setupFormValidation() {
       validateField(year, v => v !== '', 'Select year of study.'),
       validateField(track, v => v !== '', 'Select a track.'),
       validateField(experience, v => v !== '', 'Select experience level.'),
-      agree.checked || (function(){ $('#err-agreeTerms').textContent='You must accept the terms.'; $('#err-agreeTerms').classList.remove('hidden'); return false; })()
+      agree.checked || (function(){ 
+        const err = $('#err-agreeTerms');
+        if (err) {
+          err.textContent='You must accept the GDG Code of Conduct.'; 
+          err.classList.remove('hidden'); 
+        }
+        return false; 
+      })()
     ];
 
     if (validators.every(v => v)) {
       const participant = {
-        id: crypto.randomUUID(),
+        id: 'GDG-2026-' + Math.floor(1000 + Math.random() * 9000),
         fullName: fullName.value.trim(),
         email: email.value.trim(),
         phone: phone.value.trim(),
@@ -128,6 +139,7 @@ function setupFormValidation() {
         track: track.value,
         experience: experience.value,
         checkedIn: false,
+        gdgMember: true,
         timestamp: Date.now()
       };
       participants.push(participant);
@@ -135,8 +147,7 @@ function setupFormValidation() {
       updateKPIs();
       renderDirectory($('#searchInput')?.value || '');
       form.reset();
-      // optional confetti
-      confetti();
+      if (typeof confetti === 'function') confetti();
     }
   });
 }
@@ -148,95 +159,21 @@ function setupDemoFill() {
   btn.addEventListener('click', () => {
     const demo = {
       fullName: 'Demo Student',
-      email: 'demo.student@example.com',
+      email: 'demo.student@mitsgwalior.in',
       phone: '9876543210',
-      rollNumber: '2022CS123456',
+      rollNumber: '0901CS221099',
       branch: 'Computer Science & Engineering',
       year: '2nd Year',
-      track: 'Robotics & Hardware (IEEE RAS Track)',
+      track: 'Google Cloud & DevOps (GDG Cloud)',
       experience: 'Beginner'
     };
-    $('#fullName').value = demo.fullName;
-    $('#email').value = demo.email;
-    $('#phone').value = demo.phone;
-    $('#rollNumber').value = demo.rollNumber;
-    $('#branch').value = demo.branch;
-    $('#year').value = demo.year;
-    $('#track').value = demo.track;
-    $('#experience').value = demo.experience;
+    if ($('#fullName')) $('#fullName').value = demo.fullName;
+    if ($('#email')) $('#email').value = demo.email;
+    if ($('#phone')) $('#phone').value = demo.phone;
+    if ($('#rollNumber')) $('#rollNumber').value = demo.rollNumber;
+    if ($('#branch')) $('#branch').value = demo.branch;
+    if ($('#year')) $('#year').value = demo.year;
+    if ($('#track')) $('#track').value = demo.track;
+    if ($('#experience')) $('#experience').value = demo.experience;
   });
-}
-
-// Search/filter for directory
-function setupSearch() {
-  const input = $('#searchInput');
-  if (!input) return;
-  input.addEventListener('input', () => {
-    renderDirectory(input.value);
-  });
-}
-
-// Export CSV
-function setupExport() {
-  const btn = $('#btnExportCsv');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    const csv = ['Full Name,Email,Phone,Roll Number,Branch,Year,Track,Experience,CheckedIn'].concat(
-      participants.map(p => `${p.fullName},${p.email},${p.phone},${p.rollNumber},${p.branch},${p.year},${p.track},${p.experience},${p.checkedIn}`)
-    ).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'participants.csv';
-    a.click();
-    URL.revokeObjectURL(url);
-  });
-}
-
-// Toggle charts visibility (placeholder – you can hook actual Chart.js later)
-function setupChartToggle() {
-  const btn = $('#btnToggleCharts');
-  const label = $('#chartsBtnLabel');
-  const chartContainer = $('#chartsContainer');
-  if (!btn || !label) return;
-  btn.addEventListener('click', () => {
-    if (chartContainer) {
-      const visible = chartContainer.classList.toggle('hidden');
-      label.textContent = visible ? 'Hide Charts' : 'Show Charts';
-    }
-  });
-}
-
-// Reset data to seed (clears localStorage)
-function setupReset() {
-  const btn = $('#btnResetData');
-  if (!btn) return;
-  btn.addEventListener('click', () => {
-    if (confirm('Reset all participant data? This cannot be undone.')) {
-      participants = [];
-      saveData();
-      updateKPIs();
-      renderDirectory();
-    }
-  });
-}
-
-// Initialize on DOMContentLoaded
-document.addEventListener('DOMContentLoaded', () => {
-  updateKPIs();
-  renderDirectory();
-  setupFormValidation();
-  setupDemoFill();
-  setupSearch();
-  setupExport();
-  setupChartToggle();
-  setupReset();
-});
-
-// Simple confetti fallback using canvas‑confetti CDN (already loaded in HTML)
-function confetti() {
-  if (typeof confetti === 'function') {
-    confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
-  }
 }

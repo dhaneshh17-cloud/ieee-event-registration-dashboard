@@ -1,12 +1,16 @@
-/* IEEE IAS & RAS MITS Gwalior - InnovateX 2026 Stylesheet */
+/* Google Developer Groups (GDG) On Campus • MITS Gwalior - DevSummit 2026 Stylesheet */
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap');
 
 :root {
-  --ieee-blue: #00629B;
-  --ieee-dark: #002855;
-  --ieee-cyan: #00A3E0;
-  --ieee-accent: #10B981;
+  --gdg-blue: #4285F4;
+  --gdg-red: #EA4335;
+  --gdg-yellow: #FBBC04;
+  --gdg-green: #34A853;
+  --gdg-dark: #0f172a;
+  --gdg-accent: #4285F4;
+  --brand-blue: #4285F4;
+  --brand-cyan: #38BDF8;
   --bg-dark: #0B1120;
   --bg-card: #131E35;
   --border-color: rgba(255, 255, 255, 0.08);
@@ -14,7 +18,7 @@
 
 body {
   font-family: 'Inter', sans-serif;
-  background-color: var(--bg-dark);
+  background: linear-gradient(135deg, #090d16 0%, #0d1527 50%, #0a1120 100%) !important;
   color: #F1F5F9;
   overflow-x: hidden;
 }
@@ -45,14 +49,14 @@ h1, h2, h3, h4, .font-heading {
 
 /* Glassmorphism Classes */
 .glass-panel {
-  background: rgba(19, 30, 53, 0.75);
+  background: rgba(15, 23, 42, 0.8);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-nav {
-  background: rgba(11, 17, 32, 0.85);
+  background: rgba(11, 17, 32, 0.9);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -60,21 +64,21 @@ h1, h2, h3, h4, .font-heading {
 
 /* Glow & Accent Effects */
 .glow-blue {
-  box-shadow: 0 0 25px rgba(0, 163, 224, 0.25);
+  box-shadow: 0 0 25px rgba(66, 133, 244, 0.25);
 }
 
 .glow-blue:hover {
-  box-shadow: 0 0 35px rgba(0, 163, 224, 0.4);
+  box-shadow: 0 0 35px rgba(66, 133, 244, 0.4);
 }
 
 .gradient-text {
-  background: linear-gradient(135deg, #38BDF8 0%, #00A3E0 50%, #3B82F6 100%);
+  background: linear-gradient(135deg, #4285F4 0%, #34A853 35%, #FBBC04 70%, #EA4335 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
 .gradient-gold {
-  background: linear-gradient(135deg, #FDE047 0%, #EAB308 100%);
+  background: linear-gradient(135deg, #FBBC04 0%, #F59E0B 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
@@ -144,9 +148,9 @@ h1, h2, h3, h4, .font-heading {
 }
 
 .badge-checked-in {
-  background: rgba(0, 163, 224, 0.18);
-  color: #38BDF8;
-  border: 1px solid rgba(0, 163, 224, 0.35);
+  background: rgba(66, 133, 244, 0.18);
+  color: #60A5FA;
+  border: 1px solid rgba(66, 133, 244, 0.35);
 }
 
 /* Print Styles for Event Pass */
@@ -176,4 +180,17 @@ h1, h2, h3, h4, .font-heading {
     color: #000 !important;
     box-shadow: none !important;
   }
+}
+
+body::before { 
+  content: ''; 
+  position: fixed; 
+  top: 0; 
+  left: 0; 
+  width: 100vw; 
+  height: 100vh; 
+  pointer-events: none; 
+  z-index: 9999; 
+  opacity: 0.04; 
+  background: url('data:image/svg+xml,%3Csvg viewBox=%220 0 200 200%22 xmlns=%22http://www.w3.org/2000/svg%22%3E%3Cfilter id=%22noiseFilter%22%3E%3CfeTurbulence type=%22fractalNoise%22 baseFrequency=%220.65%22 numOctaves=%223%22 stitchTiles=%22stitch%22/%3E%3C/filter%3E%3Crect width=%22100%25%22 height=%22100%25%22 filter=%22url(%23noiseFilter)%22/%3E%3C/svg%3E'); 
 }

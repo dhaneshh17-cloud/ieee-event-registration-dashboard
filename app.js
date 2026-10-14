@@ -1,5 +1,5 @@
 /**
- * IEEE IAS & RAS MITS Gwalior - InnovateX 2026
+ * Google Developer Groups (GDG) On Campus • MITS Gwalior - DevSummit 2026
  * Core Application Logic, Form Validation, Directory Search/Filtering, and Ticket Generator
  */
 
@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', () => {
   // DOM Elements
   const form = document.getElementById('registrationForm');
   const btnAutoFill = document.getElementById('btnAutoFill');
-  const ieeeMemberCheckbox = document.getElementById('ieeeMember');
+  const gdgMemberCheckbox = document.getElementById('gdgMember') || document.getElementById('ieeeMember');
   const membershipIdContainer = document.getElementById('membershipIdContainer');
   const participantTableBody = document.getElementById('participantTableBody');
   const participantCardsContainer = document.getElementById('participantCardsContainer');
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     agreeTerms: {
       el: document.getElementById('agreeTerms'),
       errEl: document.getElementById('err-agreeTerms'),
-      validate: (val, isSubmitting, el) => (!el.checked ? 'You must agree to the IEEE Code of Conduct' : '')
+      validate: (val, isSubmitting, el) => (!el.checked ? 'You must agree to the GDG Community Guidelines & Code of Conduct' : '')
     }
   };
 
@@ -166,23 +166,25 @@ document.addEventListener('DOMContentLoaded', () => {
     field.el.addEventListener('change', () => runValidation(false));
   });
 
-  // Toggle IEEE membership ID input
-  if (ieeeMemberCheckbox) {
-    ieeeMemberCheckbox.addEventListener('change', (e) => {
-      if (e.target.checked) {
-        membershipIdContainer.classList.remove('hidden');
-      } else {
-        membershipIdContainer.classList.add('hidden');
+  // Toggle GDG membership ID input
+  if (gdgMemberCheckbox) {
+    gdgMemberCheckbox.addEventListener('change', (e) => {
+      if (membershipIdContainer) {
+        if (e.target.checked) {
+          membershipIdContainer.classList.remove('hidden');
+        } else {
+          membershipIdContainer.classList.add('hidden');
+        }
       }
     });
   }
 
   // --- Demo Autofill Helper for Evaluators ---
   const DEMO_NAMES = [
-    { name: 'Aditya Gupta', roll: '0901CS221008', branch: 'Computer Science & Engineering', year: '3rd Year', track: 'Applied AI & Computer Vision', phone: '9826012345' },
-    { name: 'Megha Singhal', roll: '0901EC231024', branch: 'Electronics & Communication', year: '2nd Year', track: 'Robotics & Hardware (RAS)', phone: '9425098765' },
-    { name: 'Utkarsh Trivedi', roll: '0901EE221056', branch: 'Electrical Engineering', year: '3rd Year', track: 'Industrial IoT & Automation (IAS)', phone: '9754123456' },
-    { name: 'Tanvi Saxena', roll: '0901IT241019', branch: 'Information Technology', year: '1st Year', track: 'RoboCode & Web Systems', phone: '9981234567' }
+    { name: 'Aditya Gupta', roll: '0901CS221008', branch: 'Computer Science & Engineering', year: '3rd Year', track: 'Applied AI & Machine Learning (GDG AI)', phone: '9826012345' },
+    { name: 'Megha Singhal', roll: '0901EC231024', branch: 'Electronics & Communication', year: '2nd Year', track: 'Google Cloud & DevOps (GDG Cloud)', phone: '9425098765' },
+    { name: 'Utkarsh Trivedi', roll: '0901EE221056', branch: 'Electrical Engineering', year: '3rd Year', track: 'Android & Flutter Development (GDG Mobile)', phone: '9754123456' },
+    { name: 'Tanvi Saxena', roll: '0901IT241019', branch: 'Information Technology', year: '1st Year', track: 'Modern Web & Cloud Systems (GDG Web)', phone: '9981234567' }
   ];
 
   if (btnAutoFill) {
@@ -204,8 +206,10 @@ document.addEventListener('DOMContentLoaded', () => {
       // Clear any errors
       Object.keys(fields).forEach(key => {
         const f = fields[key];
-        f.el.classList.remove('input-invalid');
-        f.el.classList.add('input-valid');
+        if (f.el) {
+          f.el.classList.remove('input-invalid');
+          f.el.classList.add('input-valid');
+        }
         if (f.errEl) f.errEl.classList.add('hidden');
       });
 
@@ -224,6 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
       // Validate all fields
       Object.keys(fields).forEach(key => {
         const field = fields[key];
+        if (!field.el) return;
         const err = field.validate(field.el.value, true, field.el);
         if (err) {
           hasErrors = true;
@@ -255,6 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       // Collect form data
+      const isMemberChecked = gdgMemberCheckbox ? gdgMemberCheckbox.checked : false;
       const participantData = {
         fullName: document.getElementById('fullName').value.trim(),
         email: document.getElementById('email').value.trim(),
@@ -265,7 +271,8 @@ document.addEventListener('DOMContentLoaded', () => {
         year: document.getElementById('year').value,
         track: document.getElementById('track').value,
         experience: document.getElementById('experience').value,
-        ieeeMember: ieeeMemberCheckbox ? ieeeMemberCheckbox.checked : false,
+        gdgMember: isMemberChecked,
+        ieeeMember: isMemberChecked,
         membershipId: document.getElementById('membershipId') ? document.getElementById('membershipId').value.trim() : ''
       };
 
@@ -281,282 +288,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
+      // Refresh UI
+      refreshDashboard();
+
+      // Show Admit Pass Modal immediately
+      openTicketModal(newParticipant);
+
       // Reset form
       form.reset();
       Object.keys(fields).forEach(key => {
-        fields[key].el.classList.remove('input-valid', 'input-invalid');
+        const f = fields[key];
+        if (f.el) f.el.classList.remove('input-valid', 'input-invalid');
       });
-      membershipIdContainer.classList.add('hidden');
+      if (membershipIdContainer) membershipIdContainer.classList.add('hidden');
 
-      // Update Directory & Stats
-      refreshDashboard();
-
-      // Show digital admit pass modal
-      openTicketModal(newParticipant);
-
-      // Toast feedback
-      showToast('Registration Successful!', `Admit pass ${newParticipant.id} generated for ${newParticipant.fullName}.`);
+      showToast('Registration Successful!', 'Your seat has been reserved & admit pass generated.');
     });
   }
 
-  // --- Search & Filter Logic ---
-  function getFilteredParticipants() {
-    let list = window.participantStore.getAll();
-
-    // 1. Text Search Filter
-    if (currentFilters.search) {
-      const q = currentFilters.search.toLowerCase();
-      list = list.filter(p => 
-        p.fullName.toLowerCase().includes(q) ||
-        p.rollNumber.toLowerCase().includes(q) ||
-        p.email.toLowerCase().includes(q) ||
-        p.id.toLowerCase().includes(q) ||
-        p.branch.toLowerCase().includes(q)
-      );
-    }
-
-    // 2. Track Filter
-    if (currentFilters.track !== 'ALL') {
-      list = list.filter(p => p.track === currentFilters.track);
-    }
-
-    // 3. Year Filter
-    if (currentFilters.year !== 'ALL') {
-      list = list.filter(p => p.year === currentFilters.year);
-    }
-
-    // 4. Status Filter
-    if (currentFilters.status !== 'ALL') {
-      list = list.filter(p => p.status === currentFilters.status);
-    }
-
-    // 5. Sorting
-    list.sort((a, b) => {
-      if (currentFilters.sort === 'newest') {
-        return new Date(b.registrationDate) - new Date(a.registrationDate);
-      } else if (currentFilters.sort === 'oldest') {
-        return new Date(a.registrationDate) - new Date(b.registrationDate);
-      } else if (currentFilters.sort === 'name_asc') {
-        return a.fullName.localeCompare(b.fullName);
-      } else if (currentFilters.sort === 'name_desc') {
-        return b.fullName.localeCompare(a.fullName);
-      }
-      return 0;
-    });
-
-    return list;
-  }
-
-  // --- Render Participant Directory ---
-  function renderParticipantDirectory() {
-    const list = getFilteredParticipants();
-    const totalCount = window.participantStore.getAll().length;
-
-    // Filter feedback count
-    if (filterResultCount) {
-      filterResultCount.textContent = `Showing ${list.length} of ${totalCount} participant${totalCount === 1 ? '' : 's'}`;
-    }
-
-    // Empty state handling
-    if (list.length === 0) {
-      participantTableBody.innerHTML = '';
-      participantCardsContainer.innerHTML = '';
-      emptyState.classList.remove('hidden');
-      return;
-    } else {
-      emptyState.classList.add('hidden');
-    }
-
-    // 1. Render Table for Desktop View
-    participantTableBody.innerHTML = list.map(p => {
-      const initials = p.fullName
-        .split(' ')
-        .map(n => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2);
-
-      const statusBadge = p.status === 'Checked-in'
-        ? `<span class="badge-checked-in inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold">
-             <i data-lucide="check-check" class="w-3 h-3"></i> Checked-in
-           </span>`
-        : `<span class="badge-confirmed inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold">
-             <i data-lucide="check" class="w-3 h-3"></i> Confirmed
-           </span>`;
-
-      return `
-        <tr class="hover:bg-slate-800/40 transition-colors">
-          <td class="py-3.5 px-4">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-sky-600 to-blue-700 flex items-center justify-center font-bold text-white text-xs shadow">
-                ${initials}
-              </div>
-              <div>
-                <div class="font-bold text-white flex items-center gap-2">
-                  <span>${escapeHtml(p.fullName)}</span>
-                  <span class="text-[10px] font-mono text-sky-400 bg-sky-500/10 px-1.5 py-0.2 rounded border border-sky-500/20">${p.id}</span>
-                </div>
-                <div class="text-xs text-slate-400 font-mono">${escapeHtml(p.rollNumber)} • ${escapeHtml(p.email)}</div>
-              </div>
-            </div>
-          </td>
-          <td class="py-3.5 px-4">
-            <div class="text-slate-200 font-medium">${escapeHtml(p.branch)}</div>
-            <div class="text-xs text-slate-400">${escapeHtml(p.year)}</div>
-          </td>
-          <td class="py-3.5 px-4">
-            <span class="text-xs font-medium text-slate-300 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg inline-block">
-              ${escapeHtml(p.track)}
-            </span>
-          </td>
-          <td class="py-3.5 px-4">
-            ${p.ieeeMember 
-              ? `<span class="text-emerald-400 text-xs font-semibold flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Member</span>`
-              : `<span class="text-slate-500 text-xs">Non-Member</span>`
-            }
-          </td>
-          <td class="py-3.5 px-4">
-            ${statusBadge}
-          </td>
-          <td class="py-3.5 px-4 text-right">
-            <div class="flex items-center justify-end gap-1.5">
-              <button 
-                type="button" 
-                onclick="window.handleCheckIn('${p.id}')"
-                class="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-sky-400 border border-slate-800 transition-colors"
-                title="${p.status === 'Checked-in' ? 'Mark Confirmed' : 'Mark Checked-in'}"
-              >
-                <i data-lucide="user-check" class="w-4 h-4"></i>
-              </button>
-              <button 
-                type="button" 
-                onclick="window.handleViewTicket('${p.id}')"
-                class="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-emerald-400 border border-slate-800 transition-colors"
-                title="View Admit Pass / Ticket"
-              >
-                <i data-lucide="ticket" class="w-4 h-4"></i>
-              </button>
-              <button 
-                type="button" 
-                onclick="window.handleDeleteParticipant('${p.id}')"
-                class="p-1.5 rounded-lg bg-slate-900 hover:bg-red-950/60 text-slate-400 hover:text-red-400 border border-slate-800 transition-colors"
-                title="Delete Registration"
-              >
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-              </button>
-            </div>
-          </td>
-        </tr>
-      `;
-    }).join('');
-
-    // 2. Render Cards for Mobile View
-    participantCardsContainer.innerHTML = list.map(p => {
-      const statusBadge = p.status === 'Checked-in'
-        ? `<span class="badge-checked-in text-[10px] px-2 py-0.5 rounded-full font-semibold">Checked-in</span>`
-        : `<span class="badge-confirmed text-[10px] px-2 py-0.5 rounded-full font-semibold">Confirmed</span>`;
-
-      return `
-        <div class="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
-          <div class="flex items-start justify-between">
-            <div>
-              <div class="text-xs font-mono text-sky-400">${p.id}</div>
-              <h4 class="font-bold text-white text-base">${escapeHtml(p.fullName)}</h4>
-              <div class="text-xs text-slate-400 font-mono">${escapeHtml(p.rollNumber)}</div>
-            </div>
-            ${statusBadge}
-          </div>
-          
-          <div class="text-xs text-slate-300 space-y-1 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
-            <div><strong>Branch:</strong> ${escapeHtml(p.branch)} (${escapeHtml(p.year)})</div>
-            <div><strong>Track:</strong> <span class="text-sky-300">${escapeHtml(p.track)}</span></div>
-            <div><strong>Email:</strong> ${escapeHtml(p.email)}</div>
-          </div>
-
-          <div class="flex items-center justify-between pt-1">
-            <span class="text-[11px] text-slate-400">
-              ${p.ieeeMember ? '★ IEEE Member' : 'Non-Member'}
-            </span>
-            <div class="flex items-center gap-2">
-              <button 
-                type="button" 
-                onclick="window.handleCheckIn('${p.id}')"
-                class="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-200 flex items-center gap-1"
-              >
-                <i data-lucide="user-check" class="w-3.5 h-3.5 text-sky-400"></i> Check-in
-              </button>
-              <button 
-                type="button" 
-                onclick="window.handleViewTicket('${p.id}')"
-                class="px-2.5 py-1.5 rounded-lg bg-sky-600/30 border border-sky-500/40 text-xs text-sky-300 flex items-center gap-1"
-              >
-                <i data-lucide="ticket" class="w-3.5 h-3.5"></i> Pass
-              </button>
-              <button 
-                type="button" 
-                onclick="window.handleDeleteParticipant('${p.id}')"
-                class="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-red-400"
-              >
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    // Re-initialize Lucide Icons on newly rendered elements
-    if (window.lucide) {
-      window.lucide.createIcons();
-    }
-  }
-
-  // --- Update Dashboard KPIs and Analytics ---
-  function updateDashboardKPIs() {
-    const analytics = window.participantStore.getAnalytics();
-
-    const kpiTotal = document.getElementById('kpiTotal');
-    const kpiSeatsLeft = document.getElementById('kpiSeatsLeft');
-    const kpiCheckIn = document.getElementById('kpiCheckIn');
-    const kpiCheckInPct = document.getElementById('kpiCheckInPct');
-    const kpiMembers = document.getElementById('kpiMembers');
-    const navCounterBadge = document.getElementById('navCounterBadge');
-    const heroSeatsText = document.getElementById('heroSeatsText');
-    const heroProgressBar = document.getElementById('heroProgressBar');
-
-    if (kpiTotal) kpiTotal.textContent = analytics.total;
-    if (kpiSeatsLeft) kpiSeatsLeft.textContent = analytics.seatsRemaining;
-    if (kpiCheckIn) kpiCheckIn.textContent = analytics.checkedIn;
-    if (kpiMembers) kpiMembers.textContent = analytics.ieeeMembers;
-
-    if (kpiCheckInPct) {
-      const pct = analytics.total > 0 ? Math.round((analytics.checkedIn / analytics.total) * 100) : 0;
-      kpiCheckInPct.textContent = `(${pct}%)`;
-    }
-
-    if (navCounterBadge) {
-      navCounterBadge.textContent = analytics.total;
-    }
-
-    if (heroSeatsText && heroProgressBar) {
-      heroSeatsText.textContent = `${analytics.total} Registered / ${analytics.seatsRemaining} Left`;
-      const fillPct = Math.min(100, Math.round((analytics.total / analytics.totalCapacity) * 100));
-      heroProgressBar.style.width = `${Math.max(5, fillPct)}%`;
-    }
-  }
-
-  function refreshDashboard() {
-    updateDashboardKPIs();
-    renderParticipantDirectory();
-    if (window.updateCharts) {
-      window.updateCharts();
-    }
-  }
-
-  // --- Filter Event Listeners ---
+  // --- Live Search, Filtering, and Sorting Handlers ---
   if (searchInput) {
     searchInput.addEventListener('input', (e) => {
-      currentFilters.search = e.target.value.trim();
+      currentFilters.search = e.target.value.trim().toLowerCase();
       renderParticipantDirectory();
     });
   }
@@ -598,10 +351,11 @@ document.addEventListener('DOMContentLoaded', () => {
       if (filterStatus) filterStatus.value = 'ALL';
       if (sortBy) sortBy.value = 'newest';
       renderParticipantDirectory();
+      showToast('Filters Cleared', 'Displaying all registered participants.');
     });
   }
 
-  // --- Chart Section Toggle ---
+  // --- Toggle Analytics Charts ---
   if (btnToggleCharts) {
     btnToggleCharts.addEventListener('click', () => {
       const isHidden = analyticsChartsWrapper.classList.contains('hidden');
@@ -616,7 +370,273 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // --- Export to CSV ---
+  // --- Filter and Sort Core Engine ---
+  function getFilteredParticipants() {
+    let list = window.participantStore.getAll();
+
+    // 1. Text Search query
+    if (currentFilters.search) {
+      const q = currentFilters.search;
+      list = list.filter(p => 
+        p.fullName.toLowerCase().includes(q) ||
+        p.email.toLowerCase().includes(q) ||
+        p.rollNumber.toLowerCase().includes(q) ||
+        p.id.toLowerCase().includes(q)
+      );
+    }
+
+    // 2. Track Filter
+    if (currentFilters.track !== 'ALL') {
+      const ft = currentFilters.track;
+      list = list.filter(p => {
+        if (p.track === ft) return true;
+        if (ft.includes('Cloud') && (p.track.includes('Cloud') || p.track.includes('Robotics') || p.track.includes('RAS'))) return true;
+        if (ft.includes('AI') && (p.track.includes('AI') || p.track.includes('Vision'))) return true;
+        if (ft.includes('Mobile') && (p.track.includes('Mobile') || p.track.includes('Flutter') || p.track.includes('IoT') || p.track.includes('IAS'))) return true;
+        if (ft.includes('Web') && (p.track.includes('Web') || p.track.includes('RoboCode'))) return true;
+        return false;
+      });
+    }
+
+    // 3. Year Filter
+    if (currentFilters.year !== 'ALL') {
+      list = list.filter(p => p.year === currentFilters.year);
+    }
+
+    // 4. Status Filter
+    if (currentFilters.status !== 'ALL') {
+      list = list.filter(p => p.status === currentFilters.status);
+    }
+
+    // 5. Sorting
+    list.sort((a, b) => {
+      if (currentFilters.sort === 'newest') {
+        return new Date(b.registrationDate) - new Date(a.registrationDate);
+      } else if (currentFilters.sort === 'oldest') {
+        return new Date(a.registrationDate) - new Date(b.registrationDate);
+      } else if (currentFilters.sort === 'name_asc') {
+        return a.fullName.localeCompare(b.fullName);
+      } else if (currentFilters.sort === 'name_desc') {
+        return b.fullName.localeCompare(a.fullName);
+      }
+      return 0;
+    });
+
+    return list;
+  }
+
+  // --- Render Participant Directory Table & Cards ---
+  function renderParticipantDirectory() {
+    const list = getFilteredParticipants();
+    const totalCount = window.participantStore.getAll().length;
+
+    // Filter feedback count
+    if (filterResultCount) {
+      if (list.length === totalCount) {
+        filterResultCount.textContent = `Showing all ${list.length} participants`;
+      } else {
+        filterResultCount.textContent = `Showing ${list.length} of ${totalCount} participants (Filtered)`;
+      }
+    }
+
+    // Handle Empty State
+    if (list.length === 0) {
+      if (participantTableBody) participantTableBody.innerHTML = '';
+      if (participantCardsContainer) participantCardsContainer.innerHTML = '';
+      if (emptyState) emptyState.classList.remove('hidden');
+      return;
+    } else {
+      if (emptyState) emptyState.classList.add('hidden');
+    }
+
+    // 1. Render Table for Desktop View
+    if (participantTableBody) {
+      participantTableBody.innerHTML = list.map(p => {
+        const initials = p.fullName
+          .split(' ')
+          .map(n => n[0])
+          .slice(0, 2)
+          .join('')
+          .toUpperCase();
+
+        const statusBadge = p.status === 'Checked-in'
+          ? `<span class="badge-checked-in text-xs px-2.5 py-1 rounded-full font-semibold inline-flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-sky-400"></span>Checked-in</span>`
+          : `<span class="badge-confirmed text-xs px-2.5 py-1 rounded-full font-semibold inline-flex items-center gap-1.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>Confirmed</span>`;
+
+        return `
+          <tr class="hover:bg-slate-900/60 transition-colors">
+            <td class="py-3.5 px-4">
+              <div class="flex items-center gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-xs shadow-sm flex-shrink-0">
+                  ${initials}
+                </div>
+                <div>
+                  <div class="font-bold text-white text-sm hover:text-sky-400 cursor-pointer" onclick="window.handleViewTicket('${p.id}')">
+                    ${escapeHtml(p.fullName)}
+                  </div>
+                  <div class="text-xs text-slate-400 font-mono flex items-center gap-2">
+                    <span>${escapeHtml(p.rollNumber)}</span>
+                    <span class="text-slate-600">•</span>
+                    <span class="text-sky-400/80">${p.id}</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td class="py-3.5 px-4">
+              <div class="text-slate-200 font-medium">${escapeHtml(p.branch)}</div>
+              <div class="text-xs text-slate-400">${escapeHtml(p.year)}</div>
+            </td>
+            <td class="py-3.5 px-4">
+              <span class="text-xs font-medium text-slate-300 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg inline-block">
+                ${escapeHtml(p.track)}
+              </span>
+            </td>
+            <td class="py-3.5 px-4">
+              ${p.gdgMember || p.ieeeMember 
+                ? `<span class="text-emerald-400 text-xs font-semibold flex items-center gap-1"><i data-lucide="check-circle" class="w-3.5 h-3.5"></i> GDG Member</span>`
+                : `<span class="text-slate-500 text-xs">Non-Member</span>`
+              }
+            </td>
+            <td class="py-3.5 px-4">
+              ${statusBadge}
+            </td>
+            <td class="py-3.5 px-4 text-right">
+              <div class="flex items-center justify-end gap-1.5">
+                <button 
+                  type="button" 
+                  onclick="window.handleCheckIn('${p.id}')"
+                  class="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-sky-400 border border-slate-800 transition-colors"
+                  title="${p.status === 'Checked-in' ? 'Mark Confirmed' : 'Mark Checked-in'}"
+                >
+                  <i data-lucide="user-check" class="w-4 h-4"></i>
+                </button>
+                <button 
+                  type="button" 
+                  onclick="window.handleViewTicket('${p.id}')"
+                  class="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-emerald-400 border border-slate-800 transition-colors"
+                  title="View Admit Pass / Ticket"
+                >
+                  <i data-lucide="ticket" class="w-4 h-4"></i>
+                </button>
+                <button 
+                  type="button" 
+                  onclick="window.handleDeleteParticipant('${p.id}')"
+                  class="p-1.5 rounded-lg bg-slate-900 hover:bg-red-950/60 text-slate-400 hover:text-red-400 border border-slate-800 transition-colors"
+                  title="Delete Registration"
+                >
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    // 2. Render Cards for Mobile View
+    if (participantCardsContainer) {
+      participantCardsContainer.innerHTML = list.map(p => {
+        const statusBadge = p.status === 'Checked-in'
+          ? `<span class="badge-checked-in text-[10px] px-2 py-0.5 rounded-full font-semibold">Checked-in</span>`
+          : `<span class="badge-confirmed text-[10px] px-2 py-0.5 rounded-full font-semibold">Confirmed</span>`;
+
+        return `
+          <div class="glass-panel p-4 rounded-2xl border border-slate-800 space-y-3">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="text-xs font-mono text-sky-400">${p.id}</div>
+                <h4 class="font-bold text-white text-base">${escapeHtml(p.fullName)}</h4>
+                <div class="text-xs text-slate-400 font-mono">${escapeHtml(p.rollNumber)}</div>
+              </div>
+              ${statusBadge}
+            </div>
+            
+            <div class="text-xs text-slate-300 space-y-1 bg-slate-900/60 p-2.5 rounded-xl border border-slate-800">
+              <div><strong>Branch:</strong> ${escapeHtml(p.branch)} (${escapeHtml(p.year)})</div>
+              <div><strong>Track:</strong> <span class="text-sky-300">${escapeHtml(p.track)}</span></div>
+              <div><strong>Email:</strong> ${escapeHtml(p.email)}</div>
+            </div>
+
+            <div class="flex items-center justify-between pt-1">
+              <span class="text-[11px] text-slate-400">
+                ${p.gdgMember || p.ieeeMember ? '★ GDG Member' : 'Non-Member'}
+              </span>
+              <div class="flex items-center gap-2">
+                <button 
+                  type="button" 
+                  onclick="window.handleCheckIn('${p.id}')"
+                  class="px-2.5 py-1.5 rounded-lg bg-slate-900 border border-slate-700 text-xs text-slate-200 flex items-center gap-1"
+                >
+                  <i data-lucide="user-check" class="w-3.5 h-3.5 text-sky-400"></i> Check-in
+                </button>
+                <button 
+                  type="button" 
+                  onclick="window.handleViewTicket('${p.id}')"
+                  class="px-2.5 py-1.5 rounded-lg bg-sky-600/30 border border-sky-500/40 text-xs text-sky-300 flex items-center gap-1"
+                >
+                  <i data-lucide="ticket" class="w-3.5 h-3.5"></i> Pass
+                </button>
+                <button 
+                  type="button" 
+                  onclick="window.handleDeleteParticipant('${p.id}')"
+                  class="p-1.5 rounded-lg bg-slate-900 border border-slate-800 text-red-400"
+                >
+                  <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Re-initialize Lucide Icons on newly rendered elements
+    if (window.lucide) {
+      window.lucide.createIcons();
+    }
+  }
+
+  // --- Update Dashboard KPIs and Analytics ---
+  function updateDashboardKPIs() {
+    const analytics = window.participantStore.getAnalytics();
+
+    const kpiTotal = document.getElementById('kpiTotal');
+    const kpiSeatsLeft = document.getElementById('kpiSeatsLeft');
+    const kpiCheckIn = document.getElementById('kpiCheckIn');
+    const kpiCheckInPct = document.getElementById('kpiCheckInPct');
+    const kpiMembers = document.getElementById('kpiMembers');
+    const navCounterBadge = document.getElementById('navCounterBadge');
+    const heroSeatsText = document.getElementById('heroSeatsText');
+    const heroProgressBar = document.getElementById('heroProgressBar');
+
+    if (kpiTotal) kpiTotal.textContent = analytics.total;
+    if (kpiSeatsLeft) kpiSeatsLeft.textContent = analytics.seatsRemaining;
+    if (kpiCheckIn) kpiCheckIn.textContent = analytics.checkedIn;
+    if (kpiMembers) kpiMembers.textContent = analytics.gdgMembers !== undefined ? analytics.gdgMembers : analytics.ieeeMembers;
+
+    if (kpiCheckInPct) {
+      const pct = analytics.total > 0 ? Math.round((analytics.checkedIn / analytics.total) * 100) : 0;
+      kpiCheckInPct.textContent = `(${pct}%)`;
+    }
+
+    if (navCounterBadge) {
+      navCounterBadge.textContent = analytics.total;
+    }
+
+    if (heroSeatsText && heroProgressBar) {
+      heroSeatsText.textContent = `${analytics.total} Registered / ${analytics.seatsRemaining} Left`;
+      const fillPct = Math.min(100, Math.round((analytics.total / analytics.totalCapacity) * 100));
+      heroProgressBar.style.width = `${Math.max(5, fillPct)}%`;
+    }
+  }
+
+  function refreshDashboard() {
+    updateDashboardKPIs();
+    renderParticipantDirectory();
+    if (window.updateCharts) window.updateCharts();
+  }
+
+  // --- Export Filtered Directory to CSV ---
   if (btnExportCsv) {
     btnExportCsv.addEventListener('click', () => {
       const list = getFilteredParticipants();
@@ -625,10 +645,11 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
       }
 
-      const headers = ['Registration ID', 'Full Name', 'Email', 'Phone', 'College', 'Roll Number', 'Branch', 'Year', 'Track', 'Experience', 'IEEE Member', 'Status', 'Registered At'];
+      const headers = ['Registration ID', 'Full Name', 'Email', 'Phone', 'College', 'Roll Number', 'Branch', 'Year', 'Track', 'Experience', 'GDG Member', 'Status', 'Registered At'];
       const csvRows = [headers.join(',')];
 
       list.forEach(p => {
+        const isMem = p.gdgMember || p.ieeeMember;
         const row = [
           `"${p.id}"`,
           `"${p.fullName.replace(/"/g, '""')}"`,
@@ -640,7 +661,7 @@ document.addEventListener('DOMContentLoaded', () => {
           `"${p.year}"`,
           `"${p.track}"`,
           `"${p.experience || ''}"`,
-          `"${p.ieeeMember ? 'Yes' : 'No'}"`,
+          `"${isMem ? 'Yes' : 'No'}"`,
           `"${p.status}"`,
           `"${new Date(p.registrationDate).toLocaleString()}"`
         ];
@@ -651,7 +672,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.setAttribute('href', url);
-      link.setAttribute('download', `IEEE_InnovateX_Participants_${new Date().toISOString().slice(0, 10)}.csv`);
+      link.setAttribute('download', `GDG_DevSummit_Participants_${new Date().toISOString().slice(0, 10)}.csv`);
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -666,7 +687,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (confirm('Reset participant records to default sample students from MITS Gwalior?')) {
         window.participantStore.resetToDefault();
         refreshDashboard();
-        showToast('Data Reset', 'Participants restored to default MITS student list.');
+        showToast('Data Reset', 'Participants restored to default GDG MITS student list.');
       }
     });
   }
@@ -768,22 +789,35 @@ document.addEventListener('DOMContentLoaded', () => {
     if (toastTimer) clearTimeout(toastTimer);
     toastTimer = setTimeout(() => {
       toastNotification.classList.add('translate-y-24', 'opacity-0', 'pointer-events-none');
-    }, 3800);
+    }, 4000);
   }
 
-  // --- Countdown Timer Logic ---
+  // --- Safe Countdown Handler (GDG Crew Photo featured on hero) ---
+  let countdownInterval;
   function initCountdown() {
-    const targetDate = new Date('2026-10-24T09:30:00+05:30').getTime();
+    if (countdownInterval) clearInterval(countdownInterval);
+
+    const elDays = document.getElementById('countdownDays');
+    if (!elDays) return;
+
+    const targetDateStr = window.participantStore.eventConfig?.targetDate || '2026-10-24T09:30:00+05:30';
+    const targetDate = new Date(targetDateStr).getTime();
 
     function update() {
       const now = new Date().getTime();
       const distance = targetDate - now;
 
+      const d = document.getElementById('countdownDays');
+      const h = document.getElementById('countdownHours');
+      const m = document.getElementById('countdownMinutes');
+      const s = document.getElementById('countdownSeconds');
+      if (!d || !h || !m || !s) return;
+
       if (distance < 0) {
-        document.getElementById('countdownDays').textContent = '00';
-        document.getElementById('countdownHours').textContent = '00';
-        document.getElementById('countdownMinutes').textContent = '00';
-        document.getElementById('countdownSeconds').textContent = '00';
+        d.textContent = '00';
+        h.textContent = '00';
+        m.textContent = '00';
+        s.textContent = '00';
         return;
       }
 
@@ -792,15 +826,21 @@ document.addEventListener('DOMContentLoaded', () => {
       const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((distance % (1000 * 60)) / 1000);
 
-      document.getElementById('countdownDays').textContent = String(days).padStart(2, '0');
-      document.getElementById('countdownHours').textContent = String(hours).padStart(2, '0');
-      document.getElementById('countdownMinutes').textContent = String(minutes).padStart(2, '0');
-      document.getElementById('countdownSeconds').textContent = String(seconds).padStart(2, '0');
+      d.textContent = String(days).padStart(2, '0');
+      h.textContent = String(hours).padStart(2, '0');
+      m.textContent = String(minutes).padStart(2, '0');
+      s.textContent = String(seconds).padStart(2, '0');
     }
 
     update();
-    setInterval(update, 1000);
+    countdownInterval = setInterval(update, 1000);
   }
+
+  // Bind real-time data sync from Firebase to UI
+  window.participantStore.onDataChange = () => {
+    initCountdown();
+    refreshDashboard();
+  };
 
   // Helper escape HTML
   function escapeHtml(str) {
